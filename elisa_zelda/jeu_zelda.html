@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" /><title>zelda</title>
+    <script
+src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <style type="text/css"> body { margin: 0; }</style>
+
+</head>
+<body>
+<script type="text/javascript">
+    var player;
+    var cursors;
+    
+    
+    var config = {
+        type: Phaser.AUTO,
+        width: 960, height: 540,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 0 },
+                debug: true
+            }},
+        scene: {preload: preload, create: create, update: update },
+    };
+    new Phaser.Game(config);
+
+
+
+    function preload(){
+        this.load.tilemapTiledJSON("premiereZone", "tiled/premiereZone.json");  
+        this.load.image('zone1','assets/zone1.png');
+        this.load.image('phaser_tileset', 'tiled/tileset.png');
+        this.load.spritesheet('perso_sheet','animation/perso_sheet.png',
+            { frameWidth: 1030, frameHeight: 32 });
+    }
+    
+    function create(){
+        
+        this.add.image(800,100,'zone1');
+        this.player = this.physics.add.sprite(32,32, 'perso_sheet');
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+
+        // caméra lol
+        this.physics.world.setBounds(300,0,640,400);
+        this.cameras.main.setBounds(50,0,640,400);
+        this.cameras.main.zoom= 2;
+        this.cameras.main.startFollow(this.player);
+
+        //c'est tiled
+        const carteDuNiveau = this.add.tilemap('premiereZone');
+
+        const tileset = carteDuNiveau.addTilesetImage(
+            'tileset',
+            'phaser_tileset'
+        );
+
+        const sol = carteDuNiveau.createLayer(
+            'sol',
+            tileset
+        );
+
+        const arbre = carteDuNiveau.createLayer(
+            'arbre',
+            tileset
+        );
+
+        const arbre_toxique = carteDuNiveau.createLayer(
+            'arbre_toxique',
+            tileset
+        );
+
+
+        const coffre = carteDuNiveau.createLayer(
+            'coffre',
+            tileset
+        );
+
+
+        const orbe = carteDuNiveau.createLayer(
+            'orbe',
+            tileset
+        );
+
+        const tronc_arbre = carteDuNiveau.createLayer(
+            'tronc_arbre',
+            tileset
+        );
+
+
+        coffre.setCollisionByProperty({estSolide: true});
+        arbre.setCollisionByProperty({estSolide: true});
+        arbre_toxique.setCollisionByProperty({estSolide: true});
+        tronc_arbre.setCollisionByProperty({estSolide: true});
+
+        collision = this.physics.add.staticGroup();
+        collision.addMultiple([arbre, arbre_toxique, tronc_arbre, coffre]);
+
+        this.physics.add.collision(this.player, collision)
+
+    
+
+        cursors = this.input.keyboard.createCursorKeys();//pour le clavier 
+        
+        
+        this.anims.create({
+            key: 'left', 
+            frames: this.anims.generateFrameNumbers('perso_sheet', {start:24,end:31}),
+            frameRate: 1,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('perso_sheet', {start:16,end:23}),
+            frameRate: 1,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'back',
+            frames: this.anims.generateFrameNumbers('perso_sheet', {start:1,end:7}),
+            frameRate: 1,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'face',
+            frames: this.anims.generateFrameNumbers('perso_sheet', {start:8,end:15}),
+            frameRate: 1,
+            repeat: -1
+        });
+        // pour les "anim" à une frame tu peux indiquer une frame unique
+        this.anims.create({
+            key: 'idle',
+            frames: [ { key: 'perso_sheet', frame: 32 } ],
+            frameRate: 1,
+            repeat: 0
+        });
+
+        this.player.anims.play('idle', true);
+
+        
+    }
+    
+    function update() {
+        
+        if (this.cursors.left.isDown) { //si la touche gauche est appuyée
+            this.player.setVelocityX(-260); //alors vitesse négative en X
+            this.player.setVelocityY(0);
+            this.player.anims.play('left', true); 
+        }
+        if (this.cursors.right.isDown) { //sinon si la touche droite est appuyée
+            this.player.setVelocityX(260); //alors vitesse positive en X
+            this.player.setVelocityY(0);
+            this.player.anims.play('right', true); 
+        }
+        if (this.cursors.up.isDown) { //sinon si la touche droite est appuyée
+            this.player.setVelocityY(-260); //alors vitesse positive en X
+            this.player.setVelocityX(0);
+            this.player.anims.play('back', true); //et animation => droite
+        }
+        if (this.cursors.down.isDown) { //sinon si la touche droite est appuyée
+            this.player.setVelocityY(260); //alors vitesse positive en X
+            this.player.setVelocityX(0);
+            this.player.anims.play('face', true); //et animation => droite
+        }
+        else { // sinon
+            this.player.setVelocityY(0);
+            this.player.setVelocityX(0)
+            this.player.anims.play('idle', true); 
+        }
+
+        
+        }
+    
+
+
+
+</script>
+</body>
+</html>

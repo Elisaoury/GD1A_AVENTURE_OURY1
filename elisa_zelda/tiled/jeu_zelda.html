@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" /><title>zelda</title>
+    <script
+src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <style type="text/css"> body { margin: 0; }</style>
+
+</head>
+<body>
+<script type="text/javascript">
+    let player;
+    let cursors;
+    
+    
+    var config = {
+        type: Phaser.AUTO,
+        width: 960, height: 540,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 0 },
+                debug: false
+            }},
+        scene: {preload: preload, create: create, update: update },
+    };
+    new Phaser.Game(config);
+
+
+
+    function preload(){
+        this.load.image('zone1','assets/zone1.png');
+        this.load.image('tileset', 'tiled/tileset.png');
+        this.load.tilemapTiledJSON('carte', 'tiled/premiereZone.json');
+        this.load.spritesheet('player','animation/personnage.png',
+            { frameWidth: 32, frameHeight: 32 });
+    }
+    
+    function create(){
+        
+        this.add.image(320,200,'zone1');
+        player = this.physics.add.sprite(10, 325, 'player');
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+
+        // caméra lol
+        this.physics.world.setBounds(0,0,640,400);
+        this.cameras.main.setBounds(0,0,640,400);
+        this.cameras.main.zoom= 2;
+        this.cameras.main.startFollow(player);
+
+        //c'est tiled
+        const carteDuNiveau = this.add.tilemap('carte');
+
+        const tileset = carteDuNiveau.addTilesetImage(
+            'tileset',
+            'tileset1'
+        );
+
+        const sol = carteDuNiveau.createLayer(
+            'sol',
+            tileset
+        );
+
+        const arbre = carteDuNiveau.createLayer(
+            'arbre',
+            tileset
+        );
+
+        const arbre_toxique = carteDuNiveau.createLayer(
+            'arbre_toxique',
+            tileset
+        );
+
+
+        const coffre = carteDuNiveau.createLayer(
+            'coffre',
+            tileset
+        );
+
+
+        const orbe = carteDuNiveau.createLayer(
+            'orbe',
+            tileset
+        );
+
+        const tronc_arbre = carteDuNiveau.createLayer(
+            'tronc_arbre',
+            tileset
+        );
+
+
+        coffre.setCollisionByProperty({estSolide: true});
+        arbre.setCollisionByProperty({estSolide: true});
+        arbre_toxique.setCollisionByProperty({estSolide: true});
+        tronc_arbre.setCollisionByProperty({estSolide: true});
+
+        collision = this.physics.add.staticGroup();
+        collision.addMultiple([arbre, arbre_toxique, tronc_arbre, coffre]);
+
+        this.physics.add.collision(player, collision)
+
+    
+
+        cursors = this.input.keyboard.createCursorKeys();//pour le clavier 
+        
+        
+        this.anims.create({
+            key: 'left', 
+            frames: this.anims.generateFrameNumbers('animation/animation_gauche', {start:0,end:7}),
+            frameRate: 5,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('animation/animation_droite', {start:0,end:7}),
+            frameRate: 5,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'back',
+            frames: this.anims.generateFrameNumbers('animation/animation_arriere', {start:0,end:7}),
+            frameRate: 5,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'face',
+            frames: this.anims.generateFrameNumbers('animation/animation_avant', {start:0,end:7}),
+            frameRate: 5,
+            repeat: -1
+        });
+        // pour les "anim" à une frame tu peux indiquer une frame unique
+        this.anims.create({
+            key: 'idle',
+            frames: [ { key: 'player', frame: 0 } ],
+            frameRate: 1,
+            repeat: 0
+        });
+
+        player.anims.play('idle', true);
+
+       
+    }
+    
+    function update(){
+        //---keyboard---
+        player.setVelocity(0);
+        //c'est le perso qui bouge
+        if (cursors.left.isDown)
+        {
+            player.setVelocityX(-160);
+            player.anims.play('left', true);  
+
+        }
+        else if (cursors.right.isDown)
+        {
+            player.setVelocityX(160);
+            player.anims.play('right', true);
+
+        }
+
+        if (cursors.up.isDown)
+        {
+            player.setVelocityY(-160);
+            player.anims.play('back', true);
+
+        }
+        else if (cursors.down.isDown)
+        {
+            player.setVelocityY(160);
+            player.anims.play('face', true);
+
+        }
+
+        if (!(cursors.down.isDown || cursors.up.isDown || cursors.left.isDown || cursors.right.isDown))
+            player.anims.play('idle', true);
+            
+    }
+
+
+
+
+</script>
+</body>
+</html>
